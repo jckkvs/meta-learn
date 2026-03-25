@@ -36,7 +36,7 @@ class FeatureMetadata:
         self._validate()
 
     def _validate(self):
-        """入力リストの長さが揃っているか検証する"""
+        """入力リストの長さが揃っているか、および許容される値か検証する"""
         if len(self.monotonicities) != self.n_features:
             raise ValueError("monotonicities must have the same length as feature_names.")
         if len(self.constraint_types) != self.n_features:
@@ -47,6 +47,16 @@ class FeatureMetadata:
             raise ValueError("manifold_flags must have the same length as feature_names.")
         if len(self.control_flags) != self.n_features:
             raise ValueError("control_flags must have the same length as feature_names.")
+            
+        allowed_mono = {'inc', 'dec', 'none'}
+        for m in self.monotonicities:
+            if m not in allowed_mono:
+                raise ValueError(f"Invalid monotonicity: {m}. Allowed values are 'inc', 'dec', 'none'.")
+                
+        allowed_types = {'strict', 'soft', 'none'}
+        for t in self.constraint_types:
+            if t not in allowed_types:
+                raise ValueError(f"Invalid constraint type: {t}. Allowed values are 'strict', 'soft', 'none'.")
 
     def slice(self, indices: List[int]) -> 'FeatureMetadata':
         """

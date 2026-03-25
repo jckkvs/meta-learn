@@ -17,6 +17,12 @@ def test_feature_metadata_validation():
         FeatureMetadata(feature_names=['f1', 'f2'], manifold_flags=[True])
     with pytest.raises(ValueError):
         FeatureMetadata(feature_names=['f1', 'f2'], control_flags=[True])
+        
+    # Value tests
+    with pytest.raises(ValueError):
+        FeatureMetadata(feature_names=['f1', 'f2'], monotonicities=['inc', 'INVALID'])
+    with pytest.raises(ValueError):
+        FeatureMetadata(feature_names=['f1', 'f2'], constraint_types=['strict', 'INVALID'])
 
 def test_feature_metadata_slice():
     meta = FeatureMetadata(
