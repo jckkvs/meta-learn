@@ -3,7 +3,7 @@ from sklearn.linear_model import LinearRegression
 from domainml.core.metadata import FeatureMetadata
 from domainml.core.logger import logger
 
-class CausalConflictDetector:
+class LinearCoefConflictChecker:
     """
     データ駆動および因果推論のアプローチ (線形回帰・偏相関の簡易モデル) 
     を用いて、ユーザーから与えられた単調性制約がデータ上で激しく矛盾 (競合) している

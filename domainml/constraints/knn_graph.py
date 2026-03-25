@@ -4,7 +4,7 @@ from sklearn.neighbors import kneighbors_graph
 from domainml.core.metadata import FeatureMetadata
 from domainml.core.logger import logger
 
-class ManifoldIntegrationMixin:
+class KNNGraphWrapper:
     """
     多様体仮説（データは低次元多様体に存在する）に基いたグラフ正則化行列を計算するミックスイン。
     制御変数（control_flags が True のもの）は多様体構造の推測（距離計算）から除外する。

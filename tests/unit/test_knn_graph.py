@@ -1,12 +1,12 @@
 import numpy as np
 import scipy.sparse as sp
 import pytest
-from domainml.constraints.manifold import ManifoldIntegrationMixin
+from domainml.constraints.knn_graph import KNNGraphWrapper
 from domainml.meta.manifold_est import ManifoldAssumption
 from domainml.core.metadata import FeatureMetadata
 
 def test_laplacian_computation():
-    mixin = ManifoldIntegrationMixin()
+    mixin = KNNGraphWrapper()
     X = np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0], [3.0, 3.0], [4.0, 4.0]])
     meta = FeatureMetadata(['f1', 'f2']) 
     
@@ -19,7 +19,7 @@ def test_laplacian_computation():
     np.testing.assert_array_almost_equal(L_sparse.toarray(), L_dense)
 
 def test_laplacian_computation_with_controls():
-    mixin = ManifoldIntegrationMixin()
+    mixin = KNNGraphWrapper()
     X = np.array([[0.0, 0.0], [1.0, 1.0]])
     meta = FeatureMetadata(['f1', 'f2'], control_flags=[True, True])
     L = mixin.compute_laplacian(X, metadata=meta, return_sparse=True)

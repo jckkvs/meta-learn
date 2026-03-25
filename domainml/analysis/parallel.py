@@ -33,7 +33,7 @@ def _evaluate_single_feature(i: int, X: np.ndarray, y: np.ndarray, mono: str, fe
 
 def parallel_check_conflicts(X: np.ndarray, y: np.ndarray, metadata: FeatureMetadata, threshold: float = 0.1, n_jobs=-1) -> list:
     """
-    CausalConflictDetector のロジックを feature ごとに並列化して実行する。
+    LinearCoefConflictChecker のロジックを feature ごとに並列化して実行する。
     """
     logger.debug(f"Running parallel conflict detection on {metadata.n_features} features using n_jobs={n_jobs}")
     

@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 
 from domainml.core.metadata import FeatureMetadata
-from domainml.analysis.causal import CausalConflictDetector
+from domainml.analysis.coef_checker import LinearCoefConflictChecker
 from domainml.analysis.metrics import satisfaction_score
 from domainml.model_selection.cv import constrained_cv
 from domainml.constraints.engine import MonotonicityEngine
@@ -20,7 +20,7 @@ def test_causal_conflict_detector():
         monotonicities=["dec", "inc"]  # Both are wrong
     )
     
-    detector = CausalConflictDetector(threshold=1.0)
+    detector = LinearCoefConflictChecker(threshold=1.0)
     conflicts = detector.detect_conflicts(X, y, metadata)
     
     assert len(conflicts) == 2
