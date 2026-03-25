@@ -24,6 +24,16 @@ def test_feature_metadata_validation():
     with pytest.raises(ValueError):
         FeatureMetadata(feature_names=['f1', 'f2'], constraint_types=['strict', 'INVALID'])
 
+    # Extrapolation sigma list validation Test
+    with pytest.raises(ValueError):
+        FeatureMetadata(feature_names=['f1', 'f2'], extrapolation_sigma=[1.0, 2.0, 3.0])
+        
+    meta = FeatureMetadata(feature_names=['f1', 'f2'], extrapolation_sigma=[1.5, 3.0])
+    assert meta.extrapolation_sigma == [1.5, 3.0]
+    
+    meta2 = FeatureMetadata(feature_names=['f1', 'f2'], extrapolation_sigma=2.5)
+    assert meta2.extrapolation_sigma == [2.5, 2.5]
+    
 def test_feature_metadata_slice():
     meta = FeatureMetadata(
         feature_names=['f1', 'f2', 'f3'],

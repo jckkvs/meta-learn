@@ -1,5 +1,4 @@
-import copy
-from typing import List, Optional, Literal
+from typing import List, Optional, Literal, Union
 
 class FeatureMetadata:
     """
@@ -11,8 +10,9 @@ class FeatureMetadata:
         constraint_types (List[str]): 'strict'(厳密), 'soft'(ペナルティ), 'none'(なし)
         groups (List[int]): 特徴量群ID。同じIDの特徴量はセットとして扱われる(-1は独立)
         manifold_flags (List[bool]): 多様体仮説を適用するかどうか
+        manifold_flags (List[bool]): 多様体仮説を適用するかどうか
         control_flags (List[bool]): 制御変数（多様体仮説や他の制約から除外するもの）かどうか
-        extrapolation_sigma (float): 外挿領域における制約の適用範囲（標準偏差の倍数）
+        extrapolation_sigma (Union[float, List[float]]): 外挿領域における制約の適用範囲（標準偏差の倍数）。各特徴量で異なる値を指定可能。
     """
     def __init__(self, 
                  feature_names: List[str],
@@ -21,7 +21,7 @@ class FeatureMetadata:
                  groups: Optional[List[int]] = None,
                  manifold_flags: Optional[List[bool]] = None,
                  control_flags: Optional[List[bool]] = None,
-                 extrapolation_sigma: float = 3.0):
+                 extrapolation_sigma: Union[float, List[float]] = 3.0):
         
         self.n_features = len(feature_names)
         self.feature_names = feature_names
@@ -31,7 +31,11 @@ class FeatureMetadata:
         self.groups = groups if groups is not None else [-1] * self.n_features
         self.manifold_flags = manifold_flags if manifold_flags is not None else [False] * self.n_features
         self.control_flags = control_flags if control_flags is not None else [False] * self.n_features
-        self.extrapolation_sigma = extrapolation_sigma
+        
+        if isinstance(extrapolation_sigma, list):
+            self.extrapolation_sigma = extrapolation_sigma
+        else:
+            self.extrapolation_sigma = [extrapolation_sigma] * self.n_features
         
         self._validate()
 
@@ -47,6 +51,8 @@ class FeatureMetadata:
             raise ValueError("manifold_flags must have the same length as feature_names.")
         if len(self.control_flags) != self.n_features:
             raise ValueError("control_flags must have the same length as feature_names.")
+        if len(self.extrapolation_sigma) != self.n_features:
+            raise ValueError("extrapolation_sigma list must have the same length as feature_names.")
             
         allowed_mono = {'inc', 'dec', 'none'}
         for m in self.monotonicities:
@@ -69,7 +75,7 @@ class FeatureMetadata:
             groups=[self.groups[i] for i in indices],
             manifold_flags=[self.manifold_flags[i] for i in indices],
             control_flags=[self.control_flags[i] for i in indices],
-            extrapolation_sigma=self.extrapolation_sigma
+            extrapolation_sigma=[self.extrapolation_sigma[i] for i in indices]
         )
 
     def merge(self, other: 'FeatureMetadata') -> 'FeatureMetadata':
@@ -83,7 +89,7 @@ class FeatureMetadata:
             groups=self.groups + other.groups,
             manifold_flags=self.manifold_flags + other.manifold_flags,
             control_flags=self.control_flags + other.control_flags,
-            extrapolation_sigma=max(self.extrapolation_sigma, other.extrapolation_sigma)
+            extrapolation_sigma=self.extrapolation_sigma + other.extrapolation_sigma
         )
         
     def clone(self) -> 'FeatureMetadata':
