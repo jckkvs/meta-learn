@@ -15,6 +15,11 @@ def test_monotonic_linear_regression_strict_inc():
     model.fit(X, y, metadata=meta)
     
     assert model.coef_[0] >= -1e-5
+    
+    # Assert actual prediction monotonicity across a dense test set
+    X_test = np.linspace(0, 10, 100).reshape(-1, 1)
+    y_pred = model.predict(X_test)
+    assert np.all(np.diff(y_pred) >= -1e-5), "Predictions are not monotonically increasing"
 
 def test_generate_extrapolation_points():
     X = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
@@ -63,6 +68,11 @@ def test_monotonic_linear_regression_strict_dec():
     model.fit(X, y, metadata=meta)
     
     assert model.coef_[0] <= 1e-5
+    
+    # Assert actual prediction monotonicity
+    X_test = np.linspace(0, 10, 100).reshape(-1, 1)
+    y_pred = model.predict(X_test)
+    assert np.all(np.diff(y_pred) <= 1e-5), "Predictions are not monotonically decreasing"
 
 def test_monotonic_linear_regression_soft_dec():
     np.random.seed(42)

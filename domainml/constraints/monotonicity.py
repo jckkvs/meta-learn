@@ -56,13 +56,14 @@ class MonotonicLinearRegression(DomainEstimator, RegressorMixin):
                     if ctype == 'strict':
                          constraints.append(w[i] >= 0)
                     elif ctype == 'soft':
-                         loss += self.soft_penalty_weight * cp.sum(cp.pos(-w[i]))
+                         # Using sum_squares for better penalty scaling as recommended
+                         loss += self.soft_penalty_weight * cp.sum_squares(cp.pos(-w[i]))
                          
                 elif mono == 'dec':
                     if ctype == 'strict':
                          constraints.append(w[i] <= 0)
                     elif ctype == 'soft':
-                         loss += self.soft_penalty_weight * cp.sum(cp.pos(w[i]))
+                         loss += self.soft_penalty_weight * cp.sum_squares(cp.pos(w[i]))
             
             logger.debug(f"Added monotonic constraints from metadata for {n_features} features. Constraints len: {len(constraints)}")
 
@@ -79,12 +80,12 @@ class MonotonicLinearRegression(DomainEstimator, RegressorMixin):
         prob.solve()
         logger.debug(f"CVXPY solve completed with status: {prob.status}")
         
-        if prob.status not in ["infeasible", "unbounded", None]:
+        if prob.status not in ["infeasible", "unbounded", None] and w.value is not None:
             # 最適化成功
             self.coef_ = w.value
             self.intercept_ = b.value if self.fit_intercept else 0.0
         else:
-            raise ValueError(f"CVXPY Optimization failed. Status: {prob.status}")
+            raise ValueError(f"CVXPY Optimization failed. Status: {prob.status}, w.value: {w.value}")
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         if self.coef_ is None:
