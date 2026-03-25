@@ -2,7 +2,7 @@ import numpy as np
 from domainml.core.metadata import FeatureMetadata
 from domainml.core.logger import logger
 
-def satisfaction_score(estimator, X_val: np.ndarray, metadata: FeatureMetadata, n_samples=100) -> float:
+def satisfaction_score(estimator, X_val: np.ndarray, metadata: FeatureMetadata, n_samples=100, eps=1e-4) -> float:
     """
     モデルの予測結果がメタデータの単調性制約をどの程度満たしているかを
     [0.0, 1.0] のスコアで返す。
@@ -16,7 +16,6 @@ def satisfaction_score(estimator, X_val: np.ndarray, metadata: FeatureMetadata, 
         
     n_total_checks = 0
     n_satisfied = 0
-    eps = 1e-4
 
     # ランダムに n_samples 個のポイントを選択
     rng = np.random.default_rng(seed=42)

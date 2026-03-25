@@ -10,10 +10,11 @@ class KernelMonotonicity(BaseEstimator, RegressorMixin):
     カーネル法（GPR, SVR）向けに、仮想制約点(Virtual Constraint Points)を用いた
     CVXPYベースの厳密単調性最適化エンジン。
     """
-    def __init__(self, estimator=None, constraint_type="strict", extrapolation_sigma=2.0):
+    def __init__(self, estimator=None, constraint_type="strict", extrapolation_sigma=2.0, lambda_reg=0.1):
         self.estimator = estimator
         self.constraint_type = constraint_type
         self.extrapolation_sigma = extrapolation_sigma
+        self.lambda_reg = lambda_reg
         
     def fit(self, X: np.ndarray, y: np.ndarray, metadata: FeatureMetadata = None, **fit_params):
         self.X_train_ = X.copy()
@@ -27,8 +28,7 @@ class KernelMonotonicity(BaseEstimator, RegressorMixin):
         alpha = cp.Variable(n_samples)
         
         # L2 Regularization on alpha directly to avoid PSD wrap hanging issues
-        lambda_reg = 0.1
-        loss = cp.sum_squares(K @ alpha - y) + lambda_reg * cp.sum_squares(alpha)
+        loss = cp.sum_squares(K @ alpha - y) + self.lambda_reg * cp.sum_squares(alpha)
         
         constraints = []
         if metadata is not None and any(m != 'none' for m in metadata.monotonicities):
@@ -67,7 +67,7 @@ class KernelMonotonicity(BaseEstimator, RegressorMixin):
         else:
             logger.warning("Kernel Monotonicity problem infeasible. Falling back to simple unconstrained Ridge.")
             # Unconstrained solution: alpha = (K + lambda*I)^-1 y
-            self.alpha_ = np.linalg.solve(K + lambda_reg * np.eye(n_samples), y)
+            self.alpha_ = np.linalg.solve(K + self.lambda_reg * np.eye(n_samples), y)
             
         return self
         

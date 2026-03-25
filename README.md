@@ -8,17 +8,23 @@
 
 DomainML は、自動抽出・推測に頼らず「ドメインエキスパートが提供する事前知識」を機械学習モデルに統合し、高精度かつ解釈性の高い予測を実現するための拡張ライブラリです。
 
-## Features (v0.2.0 - Phase 2 完了)
+## Features (v0.2.0 - Phase 1 (MVP) 完了)
 
 1. **Scikit-learn 互換の制約エンジン**
-   - **MonotonicityEngine**: 決定木 (LightGBM/XGBoost/HistGradientBoosting)、線形モデル (CVXPYによる厳密・軟制約)、カーネル法 (仮想サポート点による勾配制約)、および一般モデル (IsotonicRegressionによる事後補正ラッパー) に対して、最適な単調性制約を自動的に判別し適用します。
-2. **メタデータ追跡パイプライン**
-   - **FeatureMetadata & MetaPipeline**: 特徴量ごとの制約（単調増加、単調減少、相関、多様体）を `metadata` オブジェクトとして管理し、データ前処理や特徴量生成のパイプライン内を一貫して伝播させます。
-3. **制約競合検出とメトリクス**
-   - **CausalConflictDetector**: データ間の相関とドメイン制約の間に生じる「論理矛盾」を統計的観点から並列実行で検出します。
-   - **satisfaction_score & constrained_cv**: 制約の遵守状況（0.0 〜 1.0）を定量化し、スコアに基づく堅牢な交差検証を提供します。
-4. **多様体仮説の統合 (Graph Regularization)**
-   - **SparseLaplacian**: 大規模データセットでの効率的な動作を想定した疎行列ベースのラプラシアン構築と、多様体仮説に基づく正則化機構を提供します。
+   - **MonotonicityEngine**: 決定木、線形モデル、カーネル法、および一般モデルに対して、最適な単調性制約を自動的に判別し適用します。
+   - **MonotonicityWrapper**: IsotonicRegression による事後補正ラッパー
+
+2. **メタデータ管理**
+   - **FeatureMetadata**: ドメイン知識を保持し伝播させるためのメタデータクラス
+
+3. **制約充足度評価**
+   - **satisfaction_score**: モデルの予測結果が単調性制約をどの程度満たしているかを評価
+
+## Roadmap (Phase 2 予定)
+
+- [ ] SparseLaplacian (多様体仮説の統合)
+- [ ] CausalConflictDetector (制約競合検出)
+- [ ] constrained_cv (制約付き交差検証)
 
 ## Architecture & Design Philosophy
 

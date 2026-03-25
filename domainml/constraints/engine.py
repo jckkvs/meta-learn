@@ -63,15 +63,15 @@ class MonotonicityEngine(BaseEstimator, RegressorMixin):
             model.set_params(monotone_constraints=monotonic_cst.tolist())
             model.fit(X, y, **fit_params)
             return model
-        except ValueError:
-            pass
+        except ValueError as e:
+            logger.warning(f"Failed to apply native monotone_constraints on {model.__class__.__name__}: {e}")
             
         try:
             model.set_params(monotonic_cst=monotonic_cst.tolist())
             model.fit(X, y, **fit_params)
             return model
-        except ValueError:
-            pass
+        except ValueError as e:
+            logger.warning(f"Failed to apply native monotonic_cst on {model.__class__.__name__}: {e}")
             
         # Fallback if tree model lacks monotonic_cst Support
         logger.debug("Tree estimator lacks monotonic constraints. Falling back to wrapper.")
