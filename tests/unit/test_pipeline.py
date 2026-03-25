@@ -46,3 +46,51 @@ def test_meta_pipeline_propagation():
     preds = pipeline.predict(X, metadata=meta)
     assert final_estimator.predicted_metadata_ is not None
     assert np.allclose(preds, [2.0, 4.0])
+
+class StandardTransformer(BaseEstimator, TransformerMixin):
+    # Does not accept metadata
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X):
+        return X + 1
+
+class CustomFitTransform(BaseEstimator, TransformerMixin):
+    def fit_transform(self, X, y=None, metadata=None, **fit_params):
+        self.metadata_in = metadata
+        self.param = fit_params.get("myparam", None)
+        return X * 3
+    def transform(self, X):
+        return X * 3
+
+def test_pipeline_with_standard_sklearn_components():
+    meta = FeatureMetadata(['f1'])
+    from sklearn.linear_model import LinearRegression
+    pipeline = MetaPipeline([
+        ('transformer', StandardTransformer()),
+        ('estimator', LinearRegression())
+    ])
+    X = np.array([[1.0], [2.0]])
+    y = np.array([2.0, 3.0])
+    
+    pipeline.fit(X, y, metadata=meta) # Should not crash and should bypass metadata
+    preds = pipeline.predict(X, metadata=meta)
+    assert len(preds) == 2
+
+def test_pipeline_passthrough_and_params():
+    meta = FeatureMetadata(['f1'])
+    pipeline = MetaPipeline([
+        ('passthrough_step', 'passthrough'),
+        ('ft_transformer', CustomFitTransform()),
+        ('passthrough_est', 'passthrough')
+    ])
+    X = np.array([[1.0], [2.0]])
+    y = np.array([1.0, 2.0])
+    
+    # Passing fit_params through step routing
+    pipeline.fit(X, y, metadata=meta, ft_transformer__myparam=42)
+    transformer = pipeline.named_steps['ft_transformer']
+    assert transformer.metadata_in is not None
+    assert transformer.param == 42
+    
+    preds = pipeline.predict(X, metadata=meta)
+    assert np.allclose(preds, X * 3)
