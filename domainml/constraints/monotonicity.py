@@ -69,7 +69,8 @@ class MonotonicLinearRegression(DomainEstimator, RegressorMixin):
 
             # extrapolation_sigma に基づく外挿サポート（線形モデルに実影響はないが、APIとして定義）
             sigma = getattr(self.metadata_, 'extrapolation_sigma', 3.0)
-            if sigma > 0:
+            sigma_array = np.array(sigma) if isinstance(sigma, list) else np.array([sigma])
+            if np.any(sigma_array > 0):
                 points = generate_extrapolation_points(X, sigma=sigma, n_points=10)
                 logger.debug(f"Generated {len(points)} extrapolation points at sigma={sigma}")
                 
