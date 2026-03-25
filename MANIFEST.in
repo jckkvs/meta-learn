@@ -1,0 +1,3 @@
+exclude CONVERSATION_LOG.md
+exclude .*
+exclude *.log

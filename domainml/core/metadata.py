@@ -1,0 +1,84 @@
+import copy
+from typing import List, Optional, Literal
+
+class FeatureMetadata:
+    """
+    ドメイン知識を保持し伝播させるためのメタデータクラス。
+    
+    Attributes:
+        feature_names (List[str]): 特徴量名のリスト
+        monotonicities (List[str]): 'inc'(単調増加), 'dec'(単調減少), 'none'(制約なし)
+        constraint_types (List[str]): 'strict'(厳密), 'soft'(ペナルティ), 'none'(なし)
+        groups (List[int]): 特徴量群ID。同じIDの特徴量はセットとして扱われる(-1は独立)
+        manifold_flags (List[bool]): 多様体仮説を適用するかどうか
+        control_flags (List[bool]): 制御変数（多様体仮説や他の制約から除外するもの）かどうか
+        extrapolation_sigma (float): 外挿領域における制約の適用範囲（標準偏差の倍数）
+    """
+    def __init__(self, 
+                 feature_names: List[str],
+                 monotonicities: Optional[List[Literal['inc', 'dec', 'none']]] = None,
+                 constraint_types: Optional[List[Literal['strict', 'soft', 'none']]] = None,
+                 groups: Optional[List[int]] = None,
+                 manifold_flags: Optional[List[bool]] = None,
+                 control_flags: Optional[List[bool]] = None,
+                 extrapolation_sigma: float = 3.0):
+        
+        self.n_features = len(feature_names)
+        self.feature_names = feature_names
+        
+        self.monotonicities = monotonicities if monotonicities is not None else ['none'] * self.n_features
+        self.constraint_types = constraint_types if constraint_types is not None else ['none'] * self.n_features
+        self.groups = groups if groups is not None else [-1] * self.n_features
+        self.manifold_flags = manifold_flags if manifold_flags is not None else [False] * self.n_features
+        self.control_flags = control_flags if control_flags is not None else [False] * self.n_features
+        self.extrapolation_sigma = extrapolation_sigma
+        
+        self._validate()
+
+    def _validate(self):
+        """入力リストの長さが揃っているか検証する"""
+        if len(self.monotonicities) != self.n_features:
+            raise ValueError("monotonicities must have the same length as feature_names.")
+        if len(self.constraint_types) != self.n_features:
+            raise ValueError("constraint_types must have the same length as feature_names.")
+        if len(self.groups) != self.n_features:
+            raise ValueError("groups must have the same length as feature_names.")
+        if len(self.manifold_flags) != self.n_features:
+            raise ValueError("manifold_flags must have the same length as feature_names.")
+        if len(self.control_flags) != self.n_features:
+            raise ValueError("control_flags must have the same length as feature_names.")
+
+    def slice(self, indices: List[int]) -> 'FeatureMetadata':
+        """
+        特定のインデックスの特徴量のみを抽出した新しいFeatureMetadataを返す。
+        """
+        return FeatureMetadata(
+            feature_names=[self.feature_names[i] for i in indices],
+            monotonicities=[self.monotonicities[i] for i in indices],
+            constraint_types=[self.constraint_types[i] for i in indices],
+            groups=[self.groups[i] for i in indices],
+            manifold_flags=[self.manifold_flags[i] for i in indices],
+            control_flags=[self.control_flags[i] for i in indices],
+            extrapolation_sigma=self.extrapolation_sigma
+        )
+
+    def merge(self, other: 'FeatureMetadata') -> 'FeatureMetadata':
+        """
+        他のFeatureMetadataと結合した新しいFeatureMetadataを返す。
+        """
+        return FeatureMetadata(
+            feature_names=self.feature_names + other.feature_names,
+            monotonicities=self.monotonicities + other.monotonicities,
+            constraint_types=self.constraint_types + other.constraint_types,
+            groups=self.groups + other.groups,
+            manifold_flags=self.manifold_flags + other.manifold_flags,
+            control_flags=self.control_flags + other.control_flags,
+            extrapolation_sigma=max(self.extrapolation_sigma, other.extrapolation_sigma)
+        )
+        
+    def clone(self) -> 'FeatureMetadata':
+        """深いコピーを返す"""
+        return copy.deepcopy(self)
+
+    def __repr__(self) -> str:
+        return f"FeatureMetadata(n_features={self.n_features}, features={self.feature_names})"
