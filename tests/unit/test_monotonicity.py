@@ -24,7 +24,13 @@ def test_monotonic_linear_regression_strict_inc():
 def test_generate_extrapolation_points():
     X = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
     points = generate_extrapolation_points(X, sigma=2.0, n_points=5)
-    assert points.shape == (5, 2)
+    # 2次元なのでグリッド点: 5^2 = 25 点、各点は2列
+    assert points.shape == (25, 2)
+    # 高次元でのMCサンプリングもテスト（n_features=5 > 3）
+    Xhd = np.random.default_rng(0).standard_normal((30, 5))
+    pts_hd = generate_extrapolation_points(Xhd, sigma=2.0, n_points=8)
+    assert pts_hd.shape == (8 * 5, 5)
+
 
 def test_soft_monotonic_constraints():
     np.random.seed(42)

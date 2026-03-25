@@ -5,21 +5,30 @@ from domainml.core.metadata import FeatureMetadata
 from domainml.models.base import DomainEstimator
 from domainml.core.logger import logger
 
-def generate_extrapolation_points(X: np.ndarray, sigma: float = 3.0, n_points: int = 100) -> np.ndarray:
+def generate_extrapolation_points(X: np.ndarray, sigma: float = 3.0, n_points: int = 10) -> np.ndarray:
     """
     学習データの平均と標準偏差ベクトルを計算し、±sigma までの外挿領域における
-    仮想サポートポイントをサンプリングして返す。
+    仮想制約点を返す。（F-303）
+    
+    - 3次元以下: 格子点を密に生成（Grid sampling）
+    - 4次元以上: モンテカルロサンプリング（次元の呪い対策）
     """
     mean_X = np.mean(X, axis=0)
-    std_X = np.std(X, axis=0) + 1e-8 # ゼロ除算防止
-    
-    rng = np.random.default_rng(seed=42)
-    points = rng.uniform(
-        low=mean_X - sigma * std_X, 
-        high=mean_X + sigma * std_X, 
-        size=(n_points, X.shape[1])
-    )
-    return points
+    std_X = np.std(X, axis=0) + 1e-8  # ゼロ除算防止
+    n_features = X.shape[1]
+
+    X_min = mean_X - np.array(sigma) * std_X if not isinstance(sigma, (int, float)) else mean_X - sigma * std_X
+    X_max = mean_X + np.array(sigma) * std_X if not isinstance(sigma, (int, float)) else mean_X + sigma * std_X
+
+    if n_features <= 3:
+        # 格子点生成（低次元）
+        grids = [np.linspace(X_min[i], X_max[i], n_points) for i in range(n_features)]
+        mesh = np.array(np.meshgrid(*grids)).T.reshape(-1, n_features)
+        return mesh
+    else:
+        # モンテカルロサンプリング（高次元）
+        rng = np.random.default_rng(seed=42)
+        return rng.uniform(low=X_min, high=X_max, size=(n_points * n_features, n_features))
 
 class MonotonicLinearRegression(DomainEstimator, RegressorMixin):
     """

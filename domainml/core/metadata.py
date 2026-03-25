@@ -1,5 +1,39 @@
 import copy
+from enum import Enum
 from typing import List, Optional, Literal, Union
+
+
+class ConstraintStrength(Enum):
+    """制約強度の列挙型（F-301）
+    
+    STRICT: 数学的に厳密な保証（凸最適化で制約として強制）
+    SOFT:   損失関数へのペナルティ（近似保証）
+    PREFERENCE: 可能な限り遵守（最も弱い制約）
+    """
+    STRICT = "strict"
+    SOFT = "soft"
+    PREFERENCE = "preference"
+
+
+class MonotonicityDirection(Enum):
+    """単調性の方向を表す列挙型（F-302）"""
+    INCREASING = 1
+    DECREASING = -1
+    NONE = 0
+
+
+def monotonicity_to_direction(mono_str: str) -> MonotonicityDirection:
+    """文字列 'inc'/'dec'/'none' を MonotonicityDirection に変換（後方互換）"""
+    return {'inc': MonotonicityDirection.INCREASING,
+            'dec': MonotonicityDirection.DECREASING,
+            'none': MonotonicityDirection.NONE}[mono_str]
+
+
+def direction_to_monotonicity(direction: MonotonicityDirection) -> str:
+    """MonotonicityDirection を文字列表現に変換（後方互換）"""
+    return {MonotonicityDirection.INCREASING: 'inc',
+            MonotonicityDirection.DECREASING: 'dec',
+            MonotonicityDirection.NONE: 'none'}[direction]
 
 class FeatureMetadata:
     """
