@@ -1,3 +1,4 @@
+import copy
 from typing import List, Optional, Literal, Union
 
 class FeatureMetadata:
