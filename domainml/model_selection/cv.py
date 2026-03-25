@@ -28,6 +28,7 @@ def constrained_cv(estimator, X: np.ndarray, y: np.ndarray, metadata: FeatureMet
         try:
             model.fit(X_train, y_train, metadata=metadata)
         except TypeError:
+            logger.warning(f"Estimator {model.__class__.__name__} does not support metadata argument in constrained_cv. Fitting without constraints.")
             model.fit(X_train, y_train)
             
         # 計算
