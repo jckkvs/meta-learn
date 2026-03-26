@@ -8,6 +8,9 @@ from domainml.core.metadata import (
     FeatureMetadata,
     ConstraintStrength,
     MonotonicityDirection,
+    MonotonicityDirection,
+    ManifoldConfig,
+    ManifoldGroupConfig,
     monotonicity_to_direction,
     direction_to_monotonicity,
 )
@@ -23,6 +26,7 @@ from domainml.constraints.engine import MonotonicityEngine
 from domainml.constraints.kernel import KernelMonotonicity
 from domainml.constraints.group import GroupConstraintEngine, GroupStandardScaler
 from domainml.constraints.manifold_engine import ManifoldAssumptionEngine
+from domainml.constraints.manifold_regularizer import ManifoldRegularizer, ManifoldPreprocessor
 
 # Analysis
 from domainml.analysis.metrics import satisfaction_score
@@ -34,6 +38,8 @@ __all__ = [
     "FeatureMetadata",
     "ConstraintStrength",
     "MonotonicityDirection",
+    "ManifoldConfig",
+    "ManifoldGroupConfig",
     "monotonicity_to_direction",
     "direction_to_monotonicity",
     "MetaPipeline",
@@ -48,6 +54,8 @@ __all__ = [
     "GroupConstraintEngine",
     "GroupStandardScaler",
     "ManifoldAssumptionEngine",
+    "ManifoldRegularizer",
+    "ManifoldPreprocessor",
     # Analysis
     "satisfaction_score",
     "LinearCoefConflictChecker",

@@ -1,7 +1,50 @@
 from __future__ import annotations
 import copy
 from enum import Enum
-from typing import Optional, Literal, Union
+from typing import Optional, Literal, Union, TypedDict
+
+
+class ManifoldConfig(TypedDict, total=False):
+    """
+    多様体仮説の設定スキーマ（F-401）
+
+    TypedDict によりキーと型を静的に宣言する。`total=False` ですべてのキーはオプション。
+
+    Attributes
+    ----------
+    enabled : bool
+        多様体正則化を有効にするか（デフォルト True）
+    type : str
+        多様体の種類。 'chemical_space' | 'conformational' | 'general'
+    metric : str
+        近傍グラフ構築の距離計量。 'euclidean' | 'tanimoto' | 'mahalanobis' | 'learned'
+    intrinsic_dim : int | None
+        既知の内在次元。None の場合は estimate_method で推定
+    estimate_method : str
+        内在次元を未知の場合の推定手法。 'mle' | 'two_nn' | 'lsa'
+    local_radius : float
+        局所性の定義半径（バンド幅）
+    regularization_weight : float
+        正則化項の重み λ（デフォルト 0.1）
+    n_neighbors : int
+        k-NN グラフのご近所数（デフォルト 10）
+    """
+    enabled: bool
+    type: Literal["chemical_space", "conformational", "reaction_path", "general"]
+    metric: Literal["euclidean", "tanimoto", "mahalanobis", "learned"]
+    intrinsic_dim: Optional[int]
+    estimate_method: Literal["mle", "two_nn", "lsa"]
+    local_radius: float
+    regularization_weight: float
+    n_neighbors: int
+
+
+class ManifoldGroupConfig(TypedDict, total=False):
+    """特徴量グループごとの多様体設定（F-402）"""
+    group_name: str
+    feature_indices: list[int]
+    manifold: ManifoldConfig
+
 
 
 class ConstraintStrength(Enum):
