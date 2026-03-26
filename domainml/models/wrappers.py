@@ -5,6 +5,7 @@ MonotonicityWrapper（F-340）
 任意の scikit-learn 互換モデルに対して、Isotonic Regression による事後単調性補正を
 特徴量ごとに個別に学習・適用する。
 """
+from __future__ import annotations
 import numpy as np
 from sklearn.base import BaseEstimator, clone
 from sklearn.isotonic import IsotonicRegression

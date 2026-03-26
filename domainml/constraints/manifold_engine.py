@@ -7,8 +7,8 @@ ManifoldAssumptionEngine:
   - 疎なグラフラプラシアン行列 L を計算
   - CVXPY 損失関数に正則化項 λ f^T L f を付加するヘルパーを提供
 """
-import numpy as np
 from __future__ import annotations
+import numpy as np
 from typing import Optional
 from scipy.sparse import csr_matrix, diags
 from sklearn.neighbors import NearestNeighbors

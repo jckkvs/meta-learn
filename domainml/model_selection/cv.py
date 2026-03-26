@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 from sklearn.model_selection import KFold
 from sklearn.metrics import r2_score

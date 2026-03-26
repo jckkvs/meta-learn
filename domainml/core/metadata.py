@@ -1,6 +1,6 @@
+from __future__ import annotations
 import copy
 from enum import Enum
-from __future__ import annotations
 from typing import Optional, Literal, Union
 
 

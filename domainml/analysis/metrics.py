@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 from domainml.core.metadata import FeatureMetadata
 from domainml.core.logger import logger

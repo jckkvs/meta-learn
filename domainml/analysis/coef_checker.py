@@ -6,6 +6,7 @@ LinearCoefConflictChecker:
   - 統計的競合: 高相関特徴量間の相反する単調性制約を検出
   - 数学的競合: 線形計画法で制約の同時充足可能性を確認（F-330）
 """
+from __future__ import annotations
 import numpy as np
 from itertools import combinations
 from scipy.optimize import linprog
