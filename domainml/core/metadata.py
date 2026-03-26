@@ -171,7 +171,62 @@ class FeatureMetadata:
             extrapolation_sigma=self.extrapolation_sigma + other.extrapolation_sigma
         )
         
-    def clone(self) -> 'FeatureMetadata':
+
+    def set_manifold_config(self, config: ManifoldConfig) -> None:
+        """
+        多様体仮説の全体設定を登録する（F-401）
+
+        Parameters
+        ----------
+        config : ManifoldConfig
+            `ManifoldConfig` TypedDict で定義されたグローバル設定。
+        """
+        self._manifold_config: ManifoldConfig = config
+
+    def get_manifold_config(self) -> ManifoldConfig:
+        """登録された多様体設定を返す。未設定なら空の dict を返す。"""
+        return getattr(self, "_manifold_config", {})
+
+    def update_group_manifold(
+        self,
+        group_name: str,
+        feature_indices: list[int],
+        intrinsic_dim: int | None = None,
+        **config_kwargs,
+    ) -> None:
+        """
+        説明変数グループごとに多様体設定を登録し、該当特徴量の manifold_flags を True にする（F-402）
+
+        Parameters
+        ----------
+        group_name : str
+            グループ名（例: 'electronic', 'steric'）。診断・可視化で参照される。
+        feature_indices : list[int]
+            このグループに属する特徴量インデックスのリスト。
+        intrinsic_dim : int | None
+            推定または既知の内在次元。
+        **config_kwargs :
+            ManifoldConfig の任意のフィールドを追加で指定可。
+        """
+        if not hasattr(self, "_group_manifold_configs"):
+            self._group_manifold_configs: dict[str, ManifoldGroupConfig] = {}
+
+        cfg: ManifoldConfig = {"intrinsic_dim": intrinsic_dim, **config_kwargs}  # type: ignore[misc]
+        self._group_manifold_configs[group_name] = {
+            "group_name": group_name,
+            "feature_indices": feature_indices,
+            "manifold": cfg,
+        }
+        # 該当特徴量の manifold_flags を自動的に True に設定
+        for idx in feature_indices:
+            if 0 <= idx < self.n_features:
+                self.manifold_flags[idx] = True
+
+    def get_group_manifold_configs(self) -> dict[str, ManifoldGroupConfig]:
+        """登録されたグループ別多様体設定を返す。"""
+        return getattr(self, "_group_manifold_configs", {})
+
+    def clone(self) -> FeatureMetadata:
         """深いコピーを返す"""
         return copy.deepcopy(self)
 
