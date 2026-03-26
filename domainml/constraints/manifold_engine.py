@@ -8,7 +8,8 @@ ManifoldAssumptionEngine:
   - CVXPY 損失関数に正則化項 λ f^T L f を付加するヘルパーを提供
 """
 import numpy as np
-from typing import List, Optional
+from __future__ import annotations
+from typing import Optional
 from scipy.sparse import csr_matrix, diags
 from sklearn.neighbors import NearestNeighbors
 from domainml.core.logger import logger

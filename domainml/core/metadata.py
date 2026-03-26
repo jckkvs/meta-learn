@@ -1,6 +1,7 @@
 import copy
 from enum import Enum
-from typing import List, Optional, Literal, Union
+from __future__ import annotations
+from typing import Optional, Literal, Union
 
 
 class ConstraintStrength(Enum):

@@ -6,7 +6,8 @@ GroupConstraintEngine : Group Lasso ペナルティを係数に適用
 GroupStandardScaler   : 物理的関係を保つグループ同時スケーリング
 """
 import numpy as np
-from typing import Dict, List, Literal
+from __future__ import annotations
+from typing import Literal
 from domainml.core.logger import logger
 
 
