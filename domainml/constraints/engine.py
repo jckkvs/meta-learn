@@ -39,15 +39,22 @@ class MonotonicityEngine(BaseEstimator, RegressorMixin):
         return self
         
     def _detect_model_category(self, estimator) -> str:
+        """モデルクラス名からカテゴリを判定する。
+        
+        優先順位: tree_based > kernel > linear > unknown
+        （LinearSVR は 'linear' ではなく 'kernel' に分類するため、svr は kernel チェックを先に行う）
+        """
         name = estimator.__class__.__name__.lower()
-        if "gradientboosting" in name or "forest" in name or "tree" in name or "lgbm" in name or "xgb" in name:
+        # ツリー系（先にチェック: gradientboostingregressor 等）
+        if any(kw in name for kw in ("gradientboosting", "forest", "decisiontree", "lgbm", "xgb", "randomforest")):
             return "tree_based"
-        elif "linear" in name or "ridge" in name or "lasso" in name:
-            return "linear"
-        elif "kernel" in name or "svr" in name or "gaussian" in name:
+        # カーネル・SVR 系（LinearSVR の誤検知防止のため linear より先にチェック）
+        if any(kw in name for kw in ("svr", "svm", "kernelridge", "gaussianprocess")):
             return "kernel"
-        else:
-            return "unknown"
+        # 線形系（SVR/ツリー系を除外済みの後でチェック）
+        if any(kw in name for kw in ("linearregression", "ridge", "lasso", "elasticnet", "lars", "bayesianridge")):
+            return "linear"
+        return "unknown"
             
     def _apply_tree_constraint(self, X, y, metadata, **fit_params):
         model = clone(self.estimator)
