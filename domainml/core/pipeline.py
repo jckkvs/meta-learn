@@ -55,8 +55,33 @@ class MetaPipeline(Pipeline):
                 current_metadata = transformer.get_metadata_out(current_metadata)
                 logger.debug(f"Metadata updated by {name}: {old_meta_repr} -> {repr(current_metadata)}")
 
+        from domainml.constraints.manifold_regularizer import ManifoldRegularizer
+
         if self._final_estimator != 'passthrough':
             logger.debug(f"Fitting final estimator {self.steps[-1][0]}: {self._final_estimator.__class__.__name__} with metadata: {current_metadata}")
+            
+            # Auto-inject ManifoldRegularizer if manifold_flags are present and missing from pipeline
+            if current_metadata is not None and any(current_metadata.manifold_flags):
+                has_manifold_reg = any(isinstance(step, ManifoldRegularizer) for _, step in self.steps)
+                if not has_manifold_reg:
+                    logger.info("manifold_flags=True detected without an explicit ManifoldRegularizer. Auto-injecting...")
+                    # Get config globally or from first found group
+                    cfg = current_metadata.get_manifold_config()
+                    if not cfg:
+                        groups = current_metadata.get_group_manifold_configs()
+                        if groups:
+                            cfg = list(groups.values())[0]["manifold"]
+
+                    reg = ManifoldRegularizer(manifold_config=cfg, metadata=current_metadata)
+                    reg.fit(Xt)
+                    
+                    if hasattr(self._final_estimator, "add_regularizer"):
+                        self._final_estimator.add_regularizer(reg)
+                    elif hasattr(self._final_estimator, "estimator") and hasattr(self._final_estimator.estimator, "add_regularizer"):
+                        self._final_estimator.estimator.add_regularizer(reg)
+                    else:
+                        logger.warning("Auto-injected ManifoldRegularizer, but final estimator does not support add_regularizer().")
+
             fit_kwargs = fit_params_steps[self.steps[-1][0]]
             if _accepts_metadata(self._final_estimator.fit):
                 self._final_estimator.fit(Xt, y, metadata=current_metadata, **fit_kwargs)
